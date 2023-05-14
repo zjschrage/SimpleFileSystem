@@ -47,33 +47,3 @@ typedef struct filesystem {
 } FileSystem;
 
 void init_disk(FileSystem* fs, char* owner);
-
-void write_block(int block, void* disk, void* data, int size);
-
-void write_to_blocks(int* blocks, int n, void* disk, void* data);
-
-void mark_block_in_use(int block, uint8_t* bitmap);
-
-int get_n_free_blocks(uint16_t* free_blocks, int n, uint8_t* bitmap);
-
-int get_n_free_continous_blocks(uint16_t* free_block_pointer, int n, uint8_t* bitmap);
-
-int allocate_inode(uint16_t* start, uint8_t* bitmap);
-
-void return_free_block(int block, uint8_t* bitmap);
-
-void return_n_free_blocks(int* free_blocks, int n, uint8_t* bitmap);
-
-Inode* create_directory(FileSystem* fs, char* name, char* path);
-
-Inode* create_file(FileSystem* fs, int size, char* name, char* path);
-
-void write_to_file(FileSystem* fs, char* path, void* data, int size);
-
-void read_from_file(FileSystem*fs, char* path, void* data, int size);
-
-void dump_bitmap(u_int8_t* bitmap, int start, int end);
-
-void dump_disk(void* disk, int start, int end);
-
-void print_8bit(uint8_t bit);

@@ -1,4 +1,6 @@
 #include "filesystem.h"
+#include "inode.h"
+#include "bitmap.h"
 #include <stdio.h>
 
 void test_bitmap() {
@@ -103,8 +105,8 @@ void test_read_write_fragmented_file() {
 
 int main() {
 
-    FileSystem fs;
-    init_disk(&fs, "Zack");
-
+    // FileSystem fs;
+    // init_disk(&fs, "Zack");
+    test_read_write_fragmented_file();
 
 }
