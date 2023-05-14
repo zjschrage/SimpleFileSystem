@@ -105,15 +105,52 @@ void append_child_in_directory(FileSystem* fs, Inode* parent, int child_handle) 
     }
 }
 
+void return_inode(uint16_t block, uint8_t* bitmap) {
+    int blocks_for_inode = ceil_div(sizeof(Inode), BLOCK_SIZE);
+    for (int i = 0; i < blocks_for_inode; i++) {
+        return_free_block(block + i, bitmap);
+    }
+}
+
+void remove_child_from_directory(FileSystem* fs, Inode* parent, int child_handle) {
+    Inode* iter = parent;
+    Inode* prev = NULL;
+    uint16_t* removed = NULL;
+    uint16_t* last = NULL;
+    int free_indirect_inode = 0;
+    int d_block_start = 1;
+    while (!last) {
+        for (int i = d_block_start; i < POINTERS_PER_INODE; i++) {
+            if (iter->direct[i] == child_handle) removed = &iter->direct[i];
+            if (iter->direct[i] == 0) {
+                last = &iter->direct[i];
+                if (i == 0) free_indirect_inode = 1;
+                break;
+            }
+        }
+        if (iter->indirect) {
+            prev = iter;
+            iter = handle_to_block(fs, iter->indirect);
+        }
+        d_block_start = 0;
+    }
+    *removed = *last;
+    *last = 0;
+    if (free_indirect_inode) {
+        return_inode(prev->indirect, fs->bitmap);
+        prev->indirect = 0;
+    }
+}
+
 Inode* create_directory(FileSystem* fs, char* name, char* path) {
     int node_handle = create_inode(fs, fs->root->stats.owner, name);
     Inode* node = handle_to_block(fs, node_handle);
     Inode* parent = traverse(fs, fs->root, path, 1);
     node->stats.parent = parent->stats.self;
-    uint16_t num_children = ++parent->direct[0];
+    parent->direct[0]++;
     append_child_in_directory(fs, parent, node_handle);
     printf("Node %d named (%s) has parent %d named (%s)\n", node_handle, node->stats.name, node->stats.parent, parent->stats.name);
-    printf("Parent now has %d children. %dth child is %d\n", num_children, num_children, node_handle);
+    printf("Parent now has %d children. %dth child is %d\n", parent->direct[0], parent->direct[0], node_handle);
     return node;
 }
 
@@ -227,15 +264,7 @@ void delete_file(FileSystem*fs, char* path) {
             file = handle_to_block(fs, file->indirect);
         }
     }
-    Inode* parent_chain = parent;
-    int num_children = parent->direct[0]--;
-    // for (int i = 0; i < POINTERS_PER_INODE; i++) {
-
-    // }
-    // while (parent_chain->indirect) {
-    //     parent_chain = handle_to_block(fs, parent_chain->indirect);
-    // }
-    // for () {
-
-    // }
+    parent->direct[0]--;
+    remove_child_from_directory(fs, parent, file->stats.self);
+    return_inode(file->stats.self, fs->bitmap);
 }
