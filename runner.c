@@ -105,11 +105,34 @@ void test_read_write_fragmented_file() {
 
 int main() {
 
-    // FileSystem fs;
-    // init_disk(&fs, "Zack");
-    test_bitmap();
-    test_create_directory();
-    test_create_directory_and_file();
-    test_read_write_fragmented_file();
+    // test_bitmap();
+    // test_create_directory();
+    // test_create_directory_and_file();
+    // test_read_write_fragmented_file();
+
+    FileSystem fs;
+    init_disk(&fs, "Zack");
+
+    dump_bitmap(fs.bitmap, 0, 50);
+    printf("\n");
+
+    create_directory(&fs, "test", "/");
+    create_directory(&fs, "a", "/");
+    create_directory(&fs, "quiz", "/test");
+    create_directory(&fs, "exam", "/test");
+    create_directory(&fs, "b", "/a");
+
+    dump_bitmap(fs.bitmap, 0, 50);
+    printf("\n");
+
+    create_file(&fs, 256, "c", "/a/b");
+
+    dump_bitmap(fs.bitmap, 0, 50);
+    printf("\n");
+
+    delete_file(&fs, "/a/b/c");
+
+    dump_bitmap(fs.bitmap, 0, 50);
+    printf("\n");
 
 }

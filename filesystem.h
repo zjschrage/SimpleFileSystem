@@ -53,3 +53,12 @@ typedef struct filesystem {
  * @param owner name of owner
  */
 void init_disk(FileSystem* fs, char* owner);
+
+/**
+ * @brief Prints the contents of the disk to the console interpreted as characters 
+ * 
+ * @param disk memory
+ * @param start range
+ * @param end range
+ */
+void dump_disk(void* disk, int start, int end);

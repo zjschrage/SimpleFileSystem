@@ -84,6 +84,9 @@ Inode* create_directory(FileSystem* fs, char* name, char* path) {
     Inode* parent = traverse(fs, fs->root, path);
     node->stats.parent = parent->stats.self;
     uint16_t num_children = ++parent->direct[0];
+
+    //EXPAND HERE
+
     parent->direct[num_children] = node_handle;
     printf("Node %d named (%s) has parent %d named (%s)\n", node_handle, node->stats.name, node->stats.parent, parent->stats.name);
     printf("Parent now has %d children. %dth child is %d\n", num_children, num_children, node_handle);
@@ -132,12 +135,6 @@ Inode* create_file(FileSystem* fs, int size, char* name, char* path) {
     int num_blocks = ceil_div(size, BLOCK_SIZE);
     uint16_t block_numbers[num_blocks];
     get_n_free_blocks(block_numbers, num_blocks, fs->bitmap);
-
-    for (int i = 0; i < num_blocks; i++) {
-        printf("%d ", block_numbers[i]);
-    }
-    printf("\n");
-
     allocate_file_blocks(fs, block_numbers, num_blocks, file);
     return file;
 }
@@ -187,4 +184,34 @@ void read_from_file(FileSystem*fs, char* path, void* data, int size) {
             file = handle_to_block(fs, file->indirect);
         }
     }
+}
+
+void delete_file(FileSystem*fs, char* path) {
+    Inode* file = traverse(fs, fs->root, path);
+    Inode* parent = handle_to_block(fs, file->stats.parent);
+    int returned_all_blocks = 0;
+    while (!returned_all_blocks) {
+        returned_all_blocks = 1;
+        for (int i = 0; i < POINTERS_PER_INODE; i++) {
+            for (int len = 0; len < file->length[i]; len++) {
+                printf("Returning block %d\n", file->direct[i] + len);
+                return_free_block(file->direct[i] + len, fs->bitmap);
+            }
+        }
+        if (file->indirect) {
+            returned_all_blocks = 0;
+            file = handle_to_block(fs, file->indirect);
+        }
+    }
+    Inode* parent_chain = parent;
+    int num_children = parent->direct[0]--;
+    // for (int i = 0; i < POINTERS_PER_INODE; i++) {
+
+    // }
+    // while (parent_chain->indirect) {
+    //     parent_chain = handle_to_block(fs, parent_chain->indirect);
+    // }
+    // for () {
+
+    // }
 }
