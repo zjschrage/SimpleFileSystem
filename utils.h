@@ -55,4 +55,10 @@ int prefix_matching(char* a, char* b, char delim);
  */
 int truncate_prefix(char* a, char delim);
 
+/**
+ * @brief Prints first n elements of a char array (debugging tool)
+ * 
+ * @param arr char array
+ * @param n number of elements to print
+ */
 void print_char_arr(char* arr, int n);

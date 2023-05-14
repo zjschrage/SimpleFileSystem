@@ -2,8 +2,6 @@
 
 #include "filesystem.h"
 
-#include <stdlib.h>
-
 int create_inode(FileSystem* fs, char* owner, char* name);
 
 Inode* handle_to_block(FileSystem* fs, uint16_t file_handle);

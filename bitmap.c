@@ -7,8 +7,8 @@ void fill_bitmap(uint8_t* bitmap) {
     }
 }
 
-void mark_block_in_use(int block, uint8_t* bitmap) {
-    bitmap[block/8] -= (1 << (7 - block%8));
+void mark_block_in_use(uint16_t block, uint8_t* bitmap) {
+    bitmap[block/8] ^= (1 << (7 - block%8));
 }
 
 int get_n_free_blocks(uint16_t* free_blocks, int n, uint8_t* bitmap) {
@@ -59,11 +59,11 @@ int get_n_free_continous_blocks(uint16_t* free_block_pointer, int n, uint8_t* bi
     return found_blocks;
 }
 
-void return_free_block(int block, uint8_t* bitmap) {
+void return_free_block(uint16_t block, uint8_t* bitmap) {
     bitmap[block/8] |= (1 << (7 - block%8));
 }
 
-void return_n_free_blocks(int* free_blocks, int n, uint8_t* bitmap) {
+void return_n_free_blocks(uint16_t* free_blocks, int n, uint8_t* bitmap) {
     for (int i = 0; i < n; i++) {
         return_free_block(free_blocks[i], bitmap);
     }

@@ -22,12 +22,11 @@ void test_bitmap() {
     printf("\n");
 
     int n2 = 5;
-    int freeThese[] = {3, 4, 5, 6, 10};
+    uint16_t freeThese[] = {3, 4, 5, 6, 10};
     return_n_free_blocks(freeThese, n2, fs.bitmap);
 
     dump_bitmap(fs.bitmap, 0, 30);
     printf("\n");
-
 
 }
 
@@ -64,6 +63,7 @@ void test_read_write_fragmented_file() {
     FileSystem fs;
     init_disk(&fs, "Zack");
 
+    //Request and give back blocks to fragment disk
     int n = 20;
     uint16_t blocks[n];
     get_n_free_continous_blocks(blocks, n, fs.bitmap);
@@ -107,6 +107,9 @@ int main() {
 
     // FileSystem fs;
     // init_disk(&fs, "Zack");
+    test_bitmap();
+    test_create_directory();
+    test_create_directory_and_file();
     test_read_write_fragmented_file();
 
 }
