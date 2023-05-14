@@ -103,36 +103,84 @@ void test_read_write_fragmented_file() {
     printf("%s\n", data_buffer);
 }
 
+void test_write_to_deeply_nested_file() {
+   
+    FileSystem fs;
+    init_disk(&fs, "Zack");
+    create_directory(&fs, "a", "/");
+    create_directory(&fs, "b", "/");
+    create_directory(&fs, "c", "/");
+    create_directory(&fs, "d", "/");
+    create_directory(&fs, "e", "/");
+    create_directory(&fs, "f", "/");
+    create_directory(&fs, "g", "/");
+    create_directory(&fs, "h", "/");
+    create_directory(&fs, "x", "/h");
+
+    dump_bitmap(fs.bitmap, 0, 50);
+    printf("\n");
+
+    create_file(&fs, 200, "file", "/h/x");
+
+    dump_bitmap(fs.bitmap, 0, 50);
+    printf("\n");
+
+    int n = 200;
+    char data[n];
+    int ascii = 97;
+    int letters = 26;
+    for (int i = 0; i < n; i++) {
+        data[i] = (char)(ascii + i%letters);
+    }
+    data[n-1] = '\0';
+
+    write_to_file(&fs, "/h/x/file", data, n);
+    char data_buffer[n];
+    read_from_file(&fs, "/h/x/file", data_buffer, n);
+
+    dump_bitmap(fs.bitmap, 0, 50);
+    printf("\n");
+
+    delete_file(&fs, "/h/x/file");
+
+    dump_bitmap(fs.bitmap, 0, 50);
+    printf("\n");
+
+}
+
 int main() {
 
     // test_bitmap();
     // test_create_directory();
     // test_create_directory_and_file();
     // test_read_write_fragmented_file();
+    test_write_to_deeply_nested_file();
 
-    FileSystem fs;
-    init_disk(&fs, "Zack");
+    // FileSystem fs;
+    // init_disk(&fs, "Zack");
 
-    dump_bitmap(fs.bitmap, 0, 50);
-    printf("\n");
+    // dump_bitmap(fs.bitmap, 0, 50);
+    // printf("\n");
 
-    create_directory(&fs, "test", "/");
-    create_directory(&fs, "a", "/");
-    create_directory(&fs, "quiz", "/test");
-    create_directory(&fs, "exam", "/test");
-    create_directory(&fs, "b", "/a");
+    // create_directory(&fs, "test", "/");
+    // create_directory(&fs, "a", "/");
+    // create_directory(&fs, "quiz", "/test");
+    // create_directory(&fs, "exam", "/test");
+    // create_directory(&fs, "b", "/a");
+    // create_directory(&fs, "x", "/");
+    // create_directory(&fs, "new", "/");
 
-    dump_bitmap(fs.bitmap, 0, 50);
-    printf("\n");
+    // dump_bitmap(fs.bitmap, 0, 30);
+    // printf("\n");
 
-    create_file(&fs, 256, "c", "/a/b");
+    // create_file(&fs, 256, "c", "/a/b");
 
-    dump_bitmap(fs.bitmap, 0, 50);
-    printf("\n");
+    // dump_bitmap(fs.bitmap, 0, 60);
+    // printf("\n");
 
-    delete_file(&fs, "/a/b/c");
+    // delete_file(&fs, "/a/b/c");
 
-    dump_bitmap(fs.bitmap, 0, 50);
-    printf("\n");
+    // dump_bitmap(fs.bitmap, 0, 30);
+    // printf("\n");
 
 }

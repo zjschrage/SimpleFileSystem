@@ -55,39 +55,63 @@ int create_inode(FileSystem* fs, char* owner, char* name) {
     return start;
 }
 
-Inode* traverse(FileSystem* fs, Inode* node, char* path) {
+Inode* traverse(FileSystem* fs, Inode* node, char* path, int first_direct_index) {
     //printf("String name: %s, path: %s, is matching %d\n", node->stats.name, path, match_string(node->stats.name, path));
     if (match_string(node->stats.name, path)) return node;
     int truncate = truncate_prefix(path, PATH_DELIMITER);
-    path = path + truncate;
-    //printf("Path after truncating delim: %s\n", path);
-    for (int i = 1; i < POINTERS_PER_INODE; i++) {
+    char* truncated_path = path + truncate;
+    //printf("Path after truncating delim: %s\n", truncated_path);
+    for (int i = first_direct_index; i < POINTERS_PER_INODE; i++) {
         uint16_t child_handle = node->direct[i];
         if (child_handle == 0) return NULL;
         //printf("Test Child handle %d\n", child_handle);
         Inode* child = handle_to_block(fs, child_handle);
-        //printf("Test Child name: %s, path: %s, is matching prefix %d\n", child->stats.name, path, prefix_matching(child->stats.name, path, PATH_DELIMITER));
-        if (prefix_matching(child->stats.name, path, PATH_DELIMITER)) {
+        //printf("Test Child name: %s, path: %s, is matching prefix %d\n", child->stats.name, truncated_path, prefix_matching(child->stats.name, truncated_path, PATH_DELIMITER));
+        if (prefix_matching(child->stats.name, truncated_path, PATH_DELIMITER)) {
             if (is_file(child->stats.permissions)) return child;
-            return traverse(fs, child, path);
+            return traverse(fs, child, truncated_path, 1);
         }
     }
     uint16_t indirect_handle = node->indirect;
     if (indirect_handle == 0) return NULL;
     Inode* indirect_node = handle_to_block(fs, indirect_handle);
-    return traverse(fs, indirect_node, path);
+    return traverse(fs, indirect_node, path, 0);
+}
+
+void append_child_in_directory(FileSystem* fs, Inode* parent, int child_handle) {
+    Inode* parent_iter = parent;
+    //printf("Appending child handle %d to parent %s\n", child_handle, parent->stats.name);
+    while (parent_iter->direct[POINTERS_PER_INODE - 1] > 0) {
+        //printf("All direct pointers full\n");
+        if (parent_iter->indirect) {
+            //printf("Indirect Pointer Existing\n");
+            parent_iter = handle_to_block(fs, parent_iter->indirect);
+        }
+        else {
+            uint16_t indirect_node_handle = create_inode(fs, parent_iter->stats.owner, parent_iter->stats.name);
+            parent_iter->indirect = indirect_node_handle;
+            Inode* indirect_node = handle_to_block(fs, indirect_node_handle);
+            //printf("No Indirect Pointer, Creating new indirect pointer at %d\n", parent_iter->indirect);
+            parent_iter = indirect_node;
+            break;
+        }
+    }
+    for (int i = 0; i < POINTERS_PER_INODE; i++) {
+        //printf("Checking direct pointer %d\n", i);
+        if (parent_iter->direct[i]) continue;
+        //printf("Space found at direct pointer %d\n", i);
+        parent_iter->direct[i] = child_handle;
+        return;
+    }
 }
 
 Inode* create_directory(FileSystem* fs, char* name, char* path) {
     int node_handle = create_inode(fs, fs->root->stats.owner, name);
     Inode* node = handle_to_block(fs, node_handle);
-    Inode* parent = traverse(fs, fs->root, path);
+    Inode* parent = traverse(fs, fs->root, path, 1);
     node->stats.parent = parent->stats.self;
     uint16_t num_children = ++parent->direct[0];
-
-    //EXPAND HERE
-
-    parent->direct[num_children] = node_handle;
+    append_child_in_directory(fs, parent, node_handle);
     printf("Node %d named (%s) has parent %d named (%s)\n", node_handle, node->stats.name, node->stats.parent, parent->stats.name);
     printf("Parent now has %d children. %dth child is %d\n", num_children, num_children, node_handle);
     return node;
@@ -140,7 +164,7 @@ Inode* create_file(FileSystem* fs, int size, char* name, char* path) {
 }
 
 void write_to_file(FileSystem* fs, char* path, void* data, int size) {
-    Inode* file = traverse(fs, fs->root, path);
+    Inode* file = traverse(fs, fs->root, path, 1);
     int bytes_left_to_write = size;
     while (bytes_left_to_write > 0) {
         for (int i = 0; i < POINTERS_PER_INODE; i++) {
@@ -164,7 +188,7 @@ void write_to_file(FileSystem* fs, char* path, void* data, int size) {
 }
 
 void read_from_file(FileSystem*fs, char* path, void* data, int size) {
-    Inode* file = traverse(fs, fs->root, path);
+    Inode* file = traverse(fs, fs->root, path, 1);
     int bytes_left_to_read = size;
     while (bytes_left_to_read > 0) {
         for (int i = 0; i < POINTERS_PER_INODE; i++) {
@@ -187,7 +211,7 @@ void read_from_file(FileSystem*fs, char* path, void* data, int size) {
 }
 
 void delete_file(FileSystem*fs, char* path) {
-    Inode* file = traverse(fs, fs->root, path);
+    Inode* file = traverse(fs, fs->root, path, 1);
     Inode* parent = handle_to_block(fs, file->stats.parent);
     int returned_all_blocks = 0;
     while (!returned_all_blocks) {
