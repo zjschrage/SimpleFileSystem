@@ -46,4 +46,10 @@ typedef struct filesystem {
     struct inode* root;
 } FileSystem;
 
+/**
+ * @brief Initializes the disk: malloc for disk and bitmap and creates first root inode on the disk
+ * 
+ * @param fs filesystem object
+ * @param owner name of owner
+ */
 void init_disk(FileSystem* fs, char* owner);
