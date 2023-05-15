@@ -153,14 +153,7 @@ void test_write_and_delete_to_deeply_nested_file() {
 
 }
 
-int main() {
-
-    // test_bitmap();
-    // test_create_directory();
-    // test_create_directory_and_file();
-    // test_read_write_fragmented_file();
-    // test_write_and_delete_to_deeply_nested_file();
-
+void test_weaved_files_and_direct() {
     FileSystem fs;
     init_disk(&fs, "Zack");
 
@@ -175,6 +168,70 @@ int main() {
     create_directory(&fs, "a", "/test"); dump_bm(fs.bitmap);
     delete_file(&fs, "/test/file2"); dump_bm(fs.bitmap);
     create_file(&fs, 500, "file4", "/test/a"); dump_bm(fs.bitmap);
+}
 
+void test_many_create_delete() {
+    FileSystem fs;
+    init_disk(&fs, "Zack");
+
+    dump_bm(fs.bitmap);
+
+    create_directory(&fs, "test", "/");
+    create_file(&fs, 256, "file1", "/");
+    create_file(&fs, 256, "file2", "/test");
+    create_directory(&fs, "direct", "/");
+    create_directory(&fs, "d", "/direct");
+    create_file(&fs, 500, "file3", "/direct/d");
+    create_directory(&fs, "a", "/test");
+    create_file(&fs, 500, "file4", "/test/a");
+
+    dump_bm(fs.bitmap);
+
+    list_files(&fs, "/");
+    list_files(&fs, "/test");
+    list_files(&fs, "/test/a");
+
+    delete_directory(&fs, "/test");
+
+    dump_bm(fs.bitmap);
+    list_files(&fs, "/");
+
+    delete_directory(&fs, "/direct/d");
+
+    dump_bm(fs.bitmap);
+    list_files(&fs, "/");
+
+    create_directory(&fs, "test", "/");
+    create_file(&fs, 1000, "bigFILE", "/test");
+
+    dump_bm(fs.bitmap);
+    list_files(&fs, "/");
+    list_files(&fs, "/test");
+
+    int n = 1000;
+    char data[n];
+    int ascii = 97;
+    int letters = 26;
+    for (int i = 0; i < n; i++) {
+        data[i] = (char)(ascii + i%letters);
+    }
+    data[n-1] = '\0';
+
+    write_to_file(&fs, "/test/bigFILE", data, n);
+    char data_buffer[n];
+    read_from_file(&fs, "/test/bigFILE", data_buffer, n);
+
+    printf("Data from BIG FILE:\n%s\n", data_buffer);
+}
+
+int main() {
+
+    // test_bitmap();
+    // test_create_directory();
+    // test_create_directory_and_file();
+    // test_read_write_fragmented_file();
+    // test_write_and_delete_to_deeply_nested_file();
+    // test_weaved_files_and_direct();
+    // test_many_create_delete();
 
 }

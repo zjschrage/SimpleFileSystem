@@ -55,6 +55,20 @@ int create_inode(FileSystem* fs, char* owner, char* name) {
     return start;
 }
 
+void get_all_children_handles(FileSystem* fs, uint16_t* handles, Inode* start) {
+    //printf("Getting all children of %s at handle %d\n", start->stats.name, start->stats.self);
+    Inode* iter = start;
+    int counter = 0;
+    while (1) {
+        for (int i = 0; i < POINTERS_PER_INODE; i++) {
+            if (!iter->direct[i]) break;
+            handles[counter++] = iter->direct[i];
+        }
+        if (!iter->indirect) break;
+        iter = handle_to_block(fs, iter->indirect);
+    }
+}
+
 Inode* traverse(FileSystem* fs, Inode* node, char* path, int first_direct_index) {
     //printf("String name: %s, path: %s, is matching %d\n", node->stats.name, path, match_string(node->stats.name, path));
     if (match_string(node->stats.name, path)) return node;
@@ -256,12 +270,9 @@ void read_from_file(FileSystem*fs, char* path, void* data, int size) {
     }
 }
 
-void delete_file(FileSystem*fs, char* path) {
-    Inode* file = traverse(fs, fs->root, path, 1);
-    Inode* parent = handle_to_block(fs, file->stats.parent);
+void delete_file_blocks(FileSystem* fs, Inode* file) {
     int returned_all_blocks = 0;
     //printf("Deleting file %s at handle %d\n", file->stats.name, file->stats.self);
-    //printf("Parent if %d children of deleting file %s at handle %d\n", parent->direct[0], parent->stats.name, parent->stats.self);
     while (!returned_all_blocks) { 
         returned_all_blocks = 1;
         for (int i = 0; i < POINTERS_PER_INODE; i++) {
@@ -275,6 +286,13 @@ void delete_file(FileSystem*fs, char* path) {
             file = handle_to_block(fs, file->indirect);
         }
     }
+    return_inode(file->stats.self, fs->bitmap);
+}
+
+void delete_file_from_node(FileSystem* fs, Inode* file) {
+    Inode* parent = handle_to_block(fs, file->stats.parent);
+    //printf("Parent if %d children of deleting file %s at handle %d\n", parent->direct[0], parent->stats.name, parent->stats.self);
+    delete_file_blocks(fs, file);
     // printf("Parent direct nodes:\n");
     // printf("0: %d 1: %d 2: %d 3: %d\n", parent->direct[0], parent->direct[1], parent->direct[2], parent->direct[3]);
     parent->direct[0]--;
@@ -282,5 +300,48 @@ void delete_file(FileSystem*fs, char* path) {
     remove_child_from_directory(fs, parent, file->stats.self);
     // printf("Parent direct nodes:\n");
     // printf("0: %d 1: %d 2: %d 3: %d\n", parent->direct[0], parent->direct[1], parent->direct[2], parent->direct[3]);
+}
+
+void delete_file(FileSystem* fs, char* path) {
+    Inode* file = traverse(fs, fs->root, path, 1);
+    delete_file_from_node(fs, file);
+}
+
+void delete_directory_from_node(FileSystem* fs, Inode* file) {
+    uint16_t num_children = file->direct[0];
+    uint16_t children_handles[num_children + 1];
+    get_all_children_handles(fs, children_handles, file);
+    for (int i = 1; i <= num_children; i++) {
+        Inode* child = handle_to_block(fs, children_handles[i]);
+        if (is_file(child->stats.permissions)) delete_file_blocks(fs, child);
+        else {
+            delete_directory_from_node(fs, child);
+            return_inode(child->stats.self, fs->bitmap);
+        }
+    }
     return_inode(file->stats.self, fs->bitmap);
+}
+
+void delete_directory(FileSystem* fs, char* path) {
+    Inode* file = traverse(fs, fs->root, path, 1);
+    Inode* parent = handle_to_block(fs, file->stats.parent);
+    delete_directory_from_node(fs, file);
+    parent->direct[0]--;
+    remove_child_from_directory(fs, parent, file->stats.self);
+}
+
+void list_files_from_node(FileSystem* fs, Inode* file) {
+    uint16_t num_children = file->direct[0];
+    uint16_t children_handles[num_children + 1];
+    get_all_children_handles(fs, children_handles, file);
+    for (int i = 1; i <= num_children; i++) {
+        Inode* child = handle_to_block(fs, children_handles[i]);
+        printf("%s ", child->stats.name);
+    }
+    printf("\n");
+}
+
+void list_files(FileSystem* fs, char* path) {
+    Inode* file = traverse(fs, fs->root, path, 1);
+    list_files_from_node(fs, file);
 }

@@ -1,4 +1,4 @@
-CC = gcc -g -Wall
+CC = gcc -g -Wall #-fsanitize=address,undefined
 G_INC = -Iinclude $(CPPFLAGS)
 O = -o fs
 DEPS = *.c
