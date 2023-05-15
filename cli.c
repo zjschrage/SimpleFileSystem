@@ -10,9 +10,18 @@ char current_path[MAX_ABSOLUTE_PATH_LEN];
 int current_path_pointer = 0;
 char PATH_SEPARATOR = '/';
 
+void print_prefix() {
+    printf("Simple-File-System:%s %s$ ", current_node->stats.name, current_node->stats.owner);
+}
+
+void sfs_print(char* message) {
+    print_prefix();
+    printf("%s", message);
+}
+
 void strip_current_path() {
     if (current_path_pointer - 2 < 0) {
-        printf("Cannot Remove Root");
+        sfs_print("Cannot Remove Root");
         return;
     }
     for (int i = current_path_pointer - 2; i >= 0; i--) {
@@ -30,6 +39,7 @@ void set_current_path(char* path) {
         current_path[i] = path[i];
         if (path[i] == '\0') return;
         i++;
+        current_path_pointer = i;
     }
 }
 
@@ -52,6 +62,7 @@ void run_cli_sim(FileSystem* fs) {
     bzero(current_path, MAX_ABSOLUTE_PATH_LEN);
     set_current_path("/");
     while (1) {
+        print_prefix();
         char* line = NULL;
         size_t len = 0;
         ssize_t lineSize = 0;
@@ -65,7 +76,7 @@ void run_cli_sim(FileSystem* fs) {
                 redirect_func_call(fs, line, lineSize, i);
             }
         }
-        if (!valid) printf("Not a valid command\n");
+        if (!valid) sfs_print("Not a valid command\n");
     }
 }
 
@@ -145,10 +156,12 @@ void mkdir(FileSystem* fs, char* name) {
 }
 
 void pwd(FileSystem* fs) {
+    print_prefix();
     printf("%s\n", current_path);
 }
 
 void ls(FileSystem* fs) {
+    print_prefix();
     list_files(fs, current_path);
 }
 
@@ -160,6 +173,7 @@ void cd(FileSystem* fs, char* name) {
     else set_current_path(name);
     current_node = traverse(fs, fs->root, current_path, 1);
     if (!current_node || is_file(current_node->stats.permissions)) {
+        print_prefix();
         printf("Cannot change to this directory %s\n", current_path);
         set_current_path(last_path);
         current_node = traverse(fs, fs->root, current_path, 1);
