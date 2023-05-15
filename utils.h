@@ -56,6 +56,16 @@ int prefix_matching(char* a, char* b, char delim);
 int truncate_prefix(char* a, char delim);
 
 /**
+ * @brief Splits a string into various at most n substrings stored in pointer based on a delimeter
+ * 
+ * @param string string to be split
+ * @param pointers array of spaces for substrings
+ * @param n max number of splits
+ * @param delim delimeter
+ */
+void split(char* string, char** pointers, int n, char delim);
+
+/**
  * @brief Prints first n elements of a char array (debugging tool)
  * 
  * @param arr char array

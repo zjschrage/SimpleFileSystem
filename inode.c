@@ -165,8 +165,8 @@ Inode* create_directory(FileSystem* fs, char* name, char* path) {
     node->stats.parent = parent->stats.self;
     parent->direct[0]++;
     append_child_in_directory(fs, parent, node_handle);
-    printf("Node %d named (%s) has parent %d named (%s)\n", node_handle, node->stats.name, node->stats.parent, parent->stats.name);
-    printf("Parent now has %d children. %dth child is %d\n", parent->direct[0], parent->direct[0], node_handle);
+    //printf("Node %d named (%s) has parent %d named (%s)\n", node_handle, node->stats.name, node->stats.parent, parent->stats.name);
+    //printf("Parent now has %d children. %dth child is %d\n", parent->direct[0], parent->direct[0], node_handle);
     return node;
 }
 

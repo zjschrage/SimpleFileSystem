@@ -40,6 +40,30 @@ int truncate_prefix(char* a, char delim) {
     return MAX_NAME_LEN - 1;
 }
 
+void split(char* string, char** pointers, int n, char delim) {
+    int i = 0;
+    int j = 0;
+    int count = 0;
+    while (count < n) {
+        if (string[i] == '\0') {
+            pointers[count][j] = '\0';
+            return;
+        }
+        else if (string[i] == '\n') {
+
+        }
+        else if (string[i] == delim) {
+            pointers[count][j] = '\0';
+            count++;
+            j = 0;
+        }
+        else {
+            pointers[count][j++] = string[i];
+        }
+        i++;
+    }
+}
+
 void print_char_arr(char* arr, int n) {
     for (int i = 0; i < n; i++) {
         printf("%c", arr[i]);

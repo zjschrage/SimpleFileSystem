@@ -78,6 +78,8 @@ void delete_file(FileSystem* fs, char* path);
  */
 void delete_directory(FileSystem* fs, char* path);
 
+Inode* traverse(FileSystem* fs, Inode* node, char* path, int first_direct_index);
+
 /**
  * @brief Get the all children handles of a file. The first element is the number of children
  * 
@@ -94,3 +96,11 @@ void get_all_children_handles(FileSystem* fs, uint16_t* handles, Inode* start);
  * @param path parent path of list
  */
 void list_files(FileSystem* fs, char* path);
+
+/**
+ * @brief 
+ * 
+ * @param permissions 
+ * @return int 
+ */
+int is_file(uint16_t permissions);

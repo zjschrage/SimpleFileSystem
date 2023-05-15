@@ -11,6 +11,8 @@ int main() {
     // test_weaved_files_and_direct();
     // test_many_create_delete();
 
-    run_cli_sim();
+    FileSystem fs;
+    init_disk(&fs, "Zack");
+    run_cli_sim(&fs);
 
 }
