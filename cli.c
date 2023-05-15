@@ -24,10 +24,10 @@ void strip_current_path() {
         sfs_print("Cannot Remove Root");
         return;
     }
-    for (int i = current_path_pointer - 2; i >= 0; i--) {
+    for (int i = current_path_pointer; i >= 0; i--) {
         if (current_path[i] == PATH_SEPARATOR) {
-            current_path[i+1] = '\0';
-            current_path_pointer = i+1;
+            current_path[i] = '\0';
+            current_path_pointer = i;
             return;
         }
     }
@@ -46,11 +46,11 @@ void set_current_path(char* path) {
 void append_to_current_path(char* path) {
     int i = current_path_pointer;
     int j = 0;
+    if (current_path[i - 1] != PATH_SEPARATOR) current_path[i++] = PATH_SEPARATOR;
     while (current_path_pointer < MAX_ABSOLUTE_PATH_LEN) {
         if (path[j] == '\0') {
             current_path[i] = path[j];
-            current_path[i+1] = '\0';
-            current_path_pointer = i+1;
+            current_path_pointer = i;
             return;
         }
         current_path[i++] = path[j++];
