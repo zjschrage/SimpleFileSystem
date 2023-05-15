@@ -3,6 +3,11 @@
 #include "bitmap.h"
 #include <stdio.h>
 
+void dump_bm(uint8_t* bitmap) {
+    dump_bitmap(bitmap, 0, 80);
+    printf("\n");
+}
+
 void test_bitmap() {
     FileSystem fs;
     init_disk(&fs, "Zack");
@@ -103,7 +108,7 @@ void test_read_write_fragmented_file() {
     printf("%s\n", data_buffer);
 }
 
-void test_write_to_deeply_nested_file() {
+void test_write_and_delete_to_deeply_nested_file() {
    
     FileSystem fs;
     init_disk(&fs, "Zack");
@@ -154,33 +159,22 @@ int main() {
     // test_create_directory();
     // test_create_directory_and_file();
     // test_read_write_fragmented_file();
-    test_write_to_deeply_nested_file();
+    // test_write_and_delete_to_deeply_nested_file();
 
-    // FileSystem fs;
-    // init_disk(&fs, "Zack");
+    FileSystem fs;
+    init_disk(&fs, "Zack");
 
-    // dump_bitmap(fs.bitmap, 0, 50);
-    // printf("\n");
+    dump_bm(fs.bitmap);
 
-    // create_directory(&fs, "test", "/");
-    // create_directory(&fs, "a", "/");
-    // create_directory(&fs, "quiz", "/test");
-    // create_directory(&fs, "exam", "/test");
-    // create_directory(&fs, "b", "/a");
-    // create_directory(&fs, "x", "/");
-    // create_directory(&fs, "new", "/");
+    create_directory(&fs, "test", "/"); dump_bm(fs.bitmap);
+    create_file(&fs, 256, "file1", "/"); dump_bm(fs.bitmap);
+    create_file(&fs, 256, "file2", "/test"); dump_bm(fs.bitmap);
+    create_directory(&fs, "direct", "/"); dump_bm(fs.bitmap);
+    create_directory(&fs, "d", "/direct"); dump_bm(fs.bitmap);
+    create_file(&fs, 500, "file3", "/direct/d"); dump_bm(fs.bitmap);
+    create_directory(&fs, "a", "/test"); dump_bm(fs.bitmap);
+    delete_file(&fs, "/test/file2"); dump_bm(fs.bitmap);
+    create_file(&fs, 500, "file4", "/test/a"); dump_bm(fs.bitmap);
 
-    // dump_bitmap(fs.bitmap, 0, 30);
-    // printf("\n");
-
-    // create_file(&fs, 256, "c", "/a/b");
-
-    // dump_bitmap(fs.bitmap, 0, 60);
-    // printf("\n");
-
-    // delete_file(&fs, "/a/b/c");
-
-    // dump_bitmap(fs.bitmap, 0, 30);
-    // printf("\n");
 
 }

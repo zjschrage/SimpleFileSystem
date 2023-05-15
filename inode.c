@@ -63,8 +63,8 @@ Inode* traverse(FileSystem* fs, Inode* node, char* path, int first_direct_index)
     //printf("Path after truncating delim: %s\n", truncated_path);
     for (int i = first_direct_index; i < POINTERS_PER_INODE; i++) {
         uint16_t child_handle = node->direct[i];
-        if (child_handle == 0) return NULL;
         //printf("Test Child handle %d\n", child_handle);
+        if (child_handle == 0) return NULL;
         Inode* child = handle_to_block(fs, child_handle);
         //printf("Test Child name: %s, path: %s, is matching prefix %d\n", child->stats.name, truncated_path, prefix_matching(child->stats.name, truncated_path, PATH_DELIMITER));
         if (prefix_matching(child->stats.name, truncated_path, PATH_DELIMITER)) {
@@ -123,9 +123,11 @@ void remove_child_from_directory(FileSystem* fs, Inode* parent, int child_handle
         for (int i = d_block_start; i < POINTERS_PER_INODE; i++) {
             if (iter->direct[i] == child_handle) removed = &iter->direct[i];
             if (iter->direct[i] == 0) {
-                last = &iter->direct[i];
                 if (i == 0) free_indirect_inode = 1;
                 break;
+            }
+            else {
+                last = &iter->direct[i];
             }
         }
         if (iter->indirect) {
@@ -196,6 +198,13 @@ Inode* create_file(FileSystem* fs, int size, char* name, char* path) {
     int num_blocks = ceil_div(size, BLOCK_SIZE);
     uint16_t block_numbers[num_blocks];
     get_n_free_blocks(block_numbers, num_blocks, fs->bitmap);
+    
+    // printf("Created File at %d with free blocks:\n", file->stats.self);
+    // for (int i = 0; i < num_blocks; i++) {
+    //     printf("%d ", block_numbers[i]);
+    // }
+    // printf("\n");
+
     allocate_file_blocks(fs, block_numbers, num_blocks, file);
     return file;
 }
@@ -251,11 +260,13 @@ void delete_file(FileSystem*fs, char* path) {
     Inode* file = traverse(fs, fs->root, path, 1);
     Inode* parent = handle_to_block(fs, file->stats.parent);
     int returned_all_blocks = 0;
-    while (!returned_all_blocks) {
+    //printf("Deleting file %s at handle %d\n", file->stats.name, file->stats.self);
+    //printf("Parent if %d children of deleting file %s at handle %d\n", parent->direct[0], parent->stats.name, parent->stats.self);
+    while (!returned_all_blocks) { 
         returned_all_blocks = 1;
         for (int i = 0; i < POINTERS_PER_INODE; i++) {
             for (int len = 0; len < file->length[i]; len++) {
-                printf("Returning block %d\n", file->direct[i] + len);
+                //printf("Returning block %d\n", file->direct[i] + len);
                 return_free_block(file->direct[i] + len, fs->bitmap);
             }
         }
@@ -264,7 +275,12 @@ void delete_file(FileSystem*fs, char* path) {
             file = handle_to_block(fs, file->indirect);
         }
     }
+    // printf("Parent direct nodes:\n");
+    // printf("0: %d 1: %d 2: %d 3: %d\n", parent->direct[0], parent->direct[1], parent->direct[2], parent->direct[3]);
     parent->direct[0]--;
+    // printf("Parent now has %d children\n", parent->direct[0]);
     remove_child_from_directory(fs, parent, file->stats.self);
+    // printf("Parent direct nodes:\n");
+    // printf("0: %d 1: %d 2: %d 3: %d\n", parent->direct[0], parent->direct[1], parent->direct[2], parent->direct[3]);
     return_inode(file->stats.self, fs->bitmap);
 }
