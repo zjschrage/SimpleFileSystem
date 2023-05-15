@@ -8,14 +8,17 @@
 #include <string.h>
 
 /*
-touch [name] [size]
-mkdir [name]
-pwd
-ls
-cd [name]
-rm [name]
-rmdir [name]
-exit
+touch [name] [size]   DONE
+mkdir [name]          DONE
+pwd                   DONE
+ls                    DONE
+cd [name]             BUGGY
+rm [name]             LIMITED
+rmdir [name]          LIMITED
+exit                  DONE
+write [file] [data]
+read [file]
+chmod [file] [flags]
 */
 
 void run_cli_sim(FileSystem* fs);

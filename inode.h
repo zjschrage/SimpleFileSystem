@@ -78,6 +78,15 @@ void delete_file(FileSystem* fs, char* path);
  */
 void delete_directory(FileSystem* fs, char* path);
 
+/**
+ * @brief Locates and returns the inode for a file or directory given a path
+ * 
+ * @param fs filesystem object
+ * @param node start point of traversal
+ * @param path file or directory path
+ * @param first_direct_index first index of direct block (index 0 is used to count children in directories)
+ * @return Inode* of file or null if not found
+ */
 Inode* traverse(FileSystem* fs, Inode* node, char* path, int first_direct_index);
 
 /**
