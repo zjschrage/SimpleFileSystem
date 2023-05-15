@@ -55,6 +55,13 @@ typedef struct filesystem {
 void init_disk(FileSystem* fs, char* owner);
 
 /**
+ * @brief Frees the disk memory
+ * 
+ * @param fs filesystem object
+ */
+void free_disk(FileSystem* fs);
+
+/**
  * @brief Prints the contents of the disk to the console interpreted as characters 
  * 
  * @param disk memory

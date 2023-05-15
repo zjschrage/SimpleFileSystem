@@ -31,7 +31,7 @@ void init_inode(Inode* node, char* owner, char* name, uint16_t handle) {
     node->stats.self = handle;
     node->stats.filesize = 0;
     node->stats.permissions = 0;
-    node->stats.times.create_date = 0;
+    node->stats.times.create_date = time(NULL);
     node->stats.times.access_date = 0;
     node->stats.times.write_date = 0;
     node->valid = 1;
