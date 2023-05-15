@@ -24,13 +24,15 @@ void strip_current_path() {
         sfs_print("Cannot Remove Root");
         return;
     }
-    for (int i = current_path_pointer; i >= 0; i--) {
+    for (int i = current_path_pointer; i >= 1; i--) {
         if (current_path[i] == PATH_SEPARATOR) {
             current_path[i] = '\0';
             current_path_pointer = i;
             return;
         }
     }
+    current_path[1] = '\0';
+    current_path_pointer = 1;
 }
 
 void set_current_path(char* path) {
@@ -172,26 +174,29 @@ void cd(FileSystem* fs, char* name) {
     else if (name[0] != '/') append_to_current_path(name);
     else set_current_path(name);
     current_node = traverse(fs, fs->root, current_path, 1);
-    if (!current_node || is_file(current_node->stats.permissions)) {
+    if ((current_node == NULL) || is_file(current_node->stats.permissions)) {
         print_prefix();
         printf("Cannot change to this directory %s\n", current_path);
         set_current_path(last_path);
+        printf("%s\n", current_path);
         current_node = traverse(fs, fs->root, current_path, 1);
     }
 }
 
 void rm(FileSystem* fs, char* name) {
-    char path[MAX_ABSOLUTE_PATH_LEN];
-    bzero(path, MAX_ABSOLUTE_PATH_LEN);
-    strcat(path, current_path);
-    strcat(path, name);
-    delete_file(fs, path);
+    // char path[MAX_ABSOLUTE_PATH_LEN];
+    // bzero(path, MAX_ABSOLUTE_PATH_LEN);
+    // strcat(path, current_path);
+    // strcat(path, name);
+    if (name[0] != '/') ;
+    else delete_file(fs, name);
 }
 
 void rmdir(FileSystem* fs, char* name) {
-    char path[MAX_ABSOLUTE_PATH_LEN];
-    bzero(path, MAX_ABSOLUTE_PATH_LEN);
-    strcat(path, current_path);
-    strcat(path, name);
-    delete_directory(fs, path);
+    // char path[MAX_ABSOLUTE_PATH_LEN];
+    // bzero(path, MAX_ABSOLUTE_PATH_LEN);
+    // strcat(path, current_path);
+    // strcat(path, name);
+    if (name[0] != '/') ;
+    else delete_directory(fs, name);
 }

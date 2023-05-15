@@ -212,19 +212,13 @@ Inode* create_file(FileSystem* fs, int size, char* name, char* path) {
     int num_blocks = ceil_div(size, BLOCK_SIZE);
     uint16_t block_numbers[num_blocks];
     get_n_free_blocks(block_numbers, num_blocks, fs->bitmap);
-    
-    // printf("Created File at %d with free blocks:\n", file->stats.self);
-    // for (int i = 0; i < num_blocks; i++) {
-    //     printf("%d ", block_numbers[i]);
-    // }
-    // printf("\n");
-
     allocate_file_blocks(fs, block_numbers, num_blocks, file);
     return file;
 }
 
 void write_to_file(FileSystem* fs, char* path, void* data, int size) {
     Inode* file = traverse(fs, fs->root, path, 1);
+    if (!file) return;
     int bytes_left_to_write = size;
     while (bytes_left_to_write > 0) {
         for (int i = 0; i < POINTERS_PER_INODE; i++) {
@@ -249,6 +243,7 @@ void write_to_file(FileSystem* fs, char* path, void* data, int size) {
 
 void read_from_file(FileSystem*fs, char* path, void* data, int size) {
     Inode* file = traverse(fs, fs->root, path, 1);
+    if (!file) return;
     int bytes_left_to_read = size;
     while (bytes_left_to_read > 0) {
         for (int i = 0; i < POINTERS_PER_INODE; i++) {
@@ -304,6 +299,7 @@ void delete_file_from_node(FileSystem* fs, Inode* file) {
 
 void delete_file(FileSystem* fs, char* path) {
     Inode* file = traverse(fs, fs->root, path, 1);
+    if (!file || !is_file(file->stats.permissions)) return;
     delete_file_from_node(fs, file);
 }
 
@@ -324,6 +320,7 @@ void delete_directory_from_node(FileSystem* fs, Inode* file) {
 
 void delete_directory(FileSystem* fs, char* path) {
     Inode* file = traverse(fs, fs->root, path, 1);
+    if (!file || is_file(file->stats.permissions)) return;
     Inode* parent = handle_to_block(fs, file->stats.parent);
     delete_directory_from_node(fs, file);
     parent->direct[0]--;
@@ -343,5 +340,6 @@ void list_files_from_node(FileSystem* fs, Inode* file) {
 
 void list_files(FileSystem* fs, char* path) {
     Inode* file = traverse(fs, fs->root, path, 1);
+    if (!file) return;
     list_files_from_node(fs, file);
 }
