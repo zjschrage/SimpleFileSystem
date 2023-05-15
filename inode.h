@@ -106,11 +106,3 @@ void get_all_children_handles(FileSystem* fs, uint16_t* handles, Inode* start);
  * @param path parent path of list
  */
 void list_files(FileSystem* fs, char* path);
-
-/**
- * @brief 
- * 
- * @param permissions 
- * @return int 
- */
-int is_file(uint16_t permissions);

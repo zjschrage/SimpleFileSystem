@@ -5,6 +5,7 @@
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "file_permissions.h"
 #include <string.h>
 
 /*

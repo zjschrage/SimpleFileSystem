@@ -1,28 +1,9 @@
 #include "inode.h"
 #include "filesystem.h"
 #include "bitmap.h"
+#include "file_permissions.h"
 
 char PATH_DELIMITER = '/';
-
-void set_file(uint16_t* permissions) {
-    *permissions |= (1 << 15);
-} 
-
-int is_file(uint16_t permissions) {
-    return (permissions & (1 << 15));
-}
-
-void can_read(uint16_t* permissions) {
-    *permissions |= (1 << 14);
-} 
-
-void can_write(uint16_t* permissions) {
-    *permissions |= (1 << 13);
-} 
-
-void can_execute(uint16_t* permissions) {
-    *permissions |= (1 << 12);
-} 
 
 void init_inode(Inode* node, char* owner, char* name, uint16_t handle) {
     memcpy(node->stats.owner, owner, MAX_NAME_LEN);

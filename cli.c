@@ -21,7 +21,7 @@ void sfs_print(char* message) {
 
 void strip_current_path() {
     if (current_path_pointer - 2 < 0) {
-        sfs_print("Cannot Remove Root");
+        sfs_print("Cannot Remove Root\n");
         return;
     }
     for (int i = current_path_pointer; i >= 1; i--) {
