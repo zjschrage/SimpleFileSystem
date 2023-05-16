@@ -219,20 +219,24 @@ void cd(FileSystem* fs, char* name) {
 }
 
 void rm(FileSystem* fs, char* name) {
-    // char path[MAX_ABSOLUTE_PATH_LEN];
-    // bzero(path, MAX_ABSOLUTE_PATH_LEN);
-    // strcat(path, current_path);
-    // strcat(path, name);
-    if (name[0] != '/') ;
+    if (name[0] != '/') {
+        char path[MAX_ABSOLUTE_PATH_LEN];
+        strcpy(path, current_path);
+        strcat(path, "/");
+        strcat(path, name);
+        delete_file(fs, path);
+    }
     else delete_file(fs, name);
 }
 
 void rmdir(FileSystem* fs, char* name) {
-    // char path[MAX_ABSOLUTE_PATH_LEN];
-    // bzero(path, MAX_ABSOLUTE_PATH_LEN);
-    // strcat(path, current_path);
-    // strcat(path, name);
-    if (name[0] != '/') ;
+    if (name[0] != '/') {
+        char path[MAX_ABSOLUTE_PATH_LEN];
+        strcpy(path, current_path);
+        strcat(path, "/");
+        strcat(path, name);
+        delete_directory(fs, path);
+    }
     else delete_directory(fs, name);
 }
 
