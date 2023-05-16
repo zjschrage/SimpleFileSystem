@@ -80,6 +80,26 @@ void delete_file(FileSystem* fs, char* path);
 void delete_directory(FileSystem* fs, char* path);
 
 /**
+ * @brief Copies a file from directory src to directory dst
+ * 
+ * @param fs filesystem object
+ * @param src source copy path
+ * @param dst destination path
+ * @return Inode* pointer to copied file
+ */
+Inode* copy_file(FileSystem* fs, char* src, char* dst);
+
+/**
+ * @brief Copies a file from directory src to directory dst and removes original
+ * 
+ * @param fs filesystem object 
+ * @param src source copy path
+ * @param dst destination path
+ * @return Inode* pointer to moved file
+ */
+Inode* move_file(FileSystem* fs, char* src, char* dst);
+
+/**
  * @brief Locates and returns the inode for a file or directory given a path
  * 
  * @param fs filesystem object

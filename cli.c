@@ -1,7 +1,7 @@
 #include "cli.h"
 
-const int NUM_KEY_WORDS = 7;
-char* KEY_WORDS[NUM_KEY_WORDS] = {"touch", "mkdir", "pwd", "ls", "cd", "rm", "rmdir"};
+const int NUM_KEY_WORDS = 12;
+char* KEY_WORDS[NUM_KEY_WORDS] = {"touch", "mkdir", "pwd", "ls", "cd", "rm", "rmdir", "cp", "mv", "chmod", "read", "write"};
 
 Inode* current_node;
 const int MAX_ABSOLUTE_PATH_LEN = 128;
@@ -123,6 +123,24 @@ void handle_rmdir(FileSystem* fs, char* line) {
     rmdir(fs, name);
 }
 
+void handle_cp(FileSystem* fs, char* line) {
+    char type[3];
+    char src[MAX_PATH_NAME_LEN];
+    char dst[MAX_PATH_NAME_LEN];
+    char* pointers[3] = {type, src, dst};
+    split(line, pointers, 3, ' ');
+    cp(fs, src, dst);
+}
+
+void handle_mv(FileSystem* fs, char* line) {
+    char type[3];
+    char src[MAX_PATH_NAME_LEN];
+    char dst[MAX_PATH_NAME_LEN];
+    char* pointers[3] = {type, src, dst};
+    split(line, pointers, 3, ' ');
+    mv(fs, src, dst);
+}
+
 void redirect_func_call(FileSystem* fs, char* line, int size, int type) {
     switch (type) {
         case 0:
@@ -146,6 +164,21 @@ void redirect_func_call(FileSystem* fs, char* line, int size, int type) {
         case 6:
             handle_rmdir(fs, line);
             break;
+        case 7:
+            handle_cp(fs, line);
+            break;
+        case 8:
+            handle_mv(fs, line);
+            break;
+        // case 9:
+        //     handle_chmod(fs, line);
+        //     break;
+        // case 10:
+        //     handle_read(fs, line);
+        //     break;
+        // case 11:
+        //     handle_write(fs, line);
+        //     break;
     }
 }
 
@@ -199,4 +232,12 @@ void rmdir(FileSystem* fs, char* name) {
     // strcat(path, name);
     if (name[0] != '/') ;
     else delete_directory(fs, name);
+}
+
+void cp(FileSystem* fs, char* src, char* dst) {
+    copy_file(fs, src, dst);
+}
+
+void mv(FileSystem* fs, char* src, char* dst) {
+    move_file(fs, src, dst);
 }

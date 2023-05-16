@@ -17,9 +17,11 @@ cd [name]             BUGGY (cannot cd into bad directory)
 rm [name]             LIMITED
 rmdir [name]          LIMITED
 exit                  DONE
+cp [src] [dst]
+mv [src] [dst]
+chmod [file] [flags]
 write [file] [data]
 read [file]
-chmod [file] [flags]
 */
 
 /**
@@ -99,3 +101,27 @@ void rm(FileSystem* fs, char* name);
  * @param name directory name
  */
 void rmdir(FileSystem* fs, char* name);
+
+/**
+ * @brief Copies a file
+ * 
+ * @param fs filesystem object
+ * @param src copy source name 
+ * @param dst destination name (not including filename, only parent directory)
+ */
+void cp(FileSystem* fs, char* src, char* dst);
+
+/**
+ * @brief Moves a file
+ * 
+ * @param fs filesystem object
+ * @param src copy source name 
+ * @param dst destination name (not including filename, only parent directory)
+ */
+void mv(FileSystem* fs, char* src, char* dst);
+
+void chmod(FileSystem* fs, char* name, char* flags);
+
+void write(FileSystem* fs, char* name, char* data);
+
+void read(FileSystem* fs, char* name);

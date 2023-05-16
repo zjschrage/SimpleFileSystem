@@ -197,9 +197,7 @@ Inode* create_file(FileSystem* fs, int size, char* name, char* path) {
     return file;
 }
 
-void write_to_file(FileSystem* fs, char* path, void* data, int size) {
-    Inode* file = traverse(fs, fs->root, path, 1);
-    if (!file) return;
+void write_to_file_node(FileSystem* fs, Inode* file, void* data, int size) {
     int bytes_left_to_write = size;
     while (bytes_left_to_write > 0) {
         for (int i = 0; i < POINTERS_PER_INODE; i++) {
@@ -222,9 +220,13 @@ void write_to_file(FileSystem* fs, char* path, void* data, int size) {
     }
 }
 
-void read_from_file(FileSystem*fs, char* path, void* data, int size) {
+void write_to_file(FileSystem* fs, char* path, void* data, int size) {
     Inode* file = traverse(fs, fs->root, path, 1);
     if (!file) return;
+    write_to_file_node(fs, file, data, size);
+}
+
+void read_from_file_node(FileSystem* fs, Inode* file, void* data, int size) {
     int bytes_left_to_read = size;
     while (bytes_left_to_read > 0) {
         for (int i = 0; i < POINTERS_PER_INODE; i++) {
@@ -244,6 +246,12 @@ void read_from_file(FileSystem*fs, char* path, void* data, int size) {
             file = handle_to_block(fs, file->indirect);
         }
     }
+}
+
+void read_from_file(FileSystem* fs, char* path, void* data, int size) {
+    Inode* file = traverse(fs, fs->root, path, 1);
+    if (!file) return;
+    read_from_file_node(fs, file, data, size);
 }
 
 void delete_file_blocks(FileSystem* fs, Inode* file) {
@@ -306,6 +314,29 @@ void delete_directory(FileSystem* fs, char* path) {
     delete_directory_from_node(fs, file);
     parent->direct[0]--;
     remove_child_from_directory(fs, parent, file->stats.self);
+}
+
+Inode* copy_file_node(FileSystem* fs, Inode* file, char* dst) {
+    uint16_t size = file->stats.filesize;
+    Inode* copy = create_file(fs, size, file->stats.name, dst);
+    char data[size]; 
+    read_from_file_node(fs, file, data, size);
+    write_to_file_node(fs, copy, data, size);
+    return copy;
+}
+
+Inode* copy_file(FileSystem* fs, char* src, char* dst) {
+    Inode* file = traverse(fs, fs->root, src, 1);
+    if (!file || !is_file(file->stats.permissions)) return NULL;
+    return copy_file_node(fs, file, dst);
+}
+
+Inode* move_file(FileSystem* fs, char* src, char* dst) {
+    Inode* file = traverse(fs, fs->root, src, 1);
+    if (!file || !is_file(file->stats.permissions)) return NULL;
+    Inode* copy = copy_file_node(fs, file, dst);
+    delete_file_from_node(fs, file);
+    return copy;
 }
 
 void list_files_from_node(FileSystem* fs, Inode* file) {
