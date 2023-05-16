@@ -143,6 +143,7 @@ Inode* create_directory(FileSystem* fs, char* name, char* path) {
     int node_handle = create_inode(fs, fs->root->stats.owner, name);
     Inode* node = handle_to_block(fs, node_handle);
     Inode* parent = traverse(fs, fs->root, path, 1);
+    if (!parent) return NULL;
     node->stats.parent = parent->stats.self;
     parent->direct[0]++;
     append_child_in_directory(fs, parent, node_handle);
@@ -188,6 +189,7 @@ void allocate_file_blocks(FileSystem* fs, uint16_t* block_numbers, int num_block
 
 Inode* create_file(FileSystem* fs, int size, char* name, char* path) {
     Inode* file = create_directory(fs, name, path);
+    if (!file) return NULL;
     set_file(&file->stats.permissions);
     file->stats.filesize = size;
     int num_blocks = ceil_div(size, BLOCK_SIZE);
@@ -222,7 +224,7 @@ void write_to_file_node(FileSystem* fs, Inode* file, void* data, int size) {
 
 void write_to_file(FileSystem* fs, char* path, void* data, int size) {
     Inode* file = traverse(fs, fs->root, path, 1);
-    if (!file) return;
+    if (!file || size > file->stats.filesize) return;
     write_to_file_node(fs, file, data, size);
 }
 
@@ -250,7 +252,7 @@ void read_from_file_node(FileSystem* fs, Inode* file, void* data, int size) {
 
 void read_from_file(FileSystem* fs, char* path, void* data, int size) {
     Inode* file = traverse(fs, fs->root, path, 1);
-    if (!file) return;
+    if (!file || size > file->stats.filesize) return;
     read_from_file_node(fs, file, data, size);
 }
 
@@ -319,6 +321,7 @@ void delete_directory(FileSystem* fs, char* path) {
 Inode* copy_file_node(FileSystem* fs, Inode* file, char* dst) {
     uint16_t size = file->stats.filesize;
     Inode* copy = create_file(fs, size, file->stats.name, dst);
+    if (!copy) return NULL;
     char data[size]; 
     read_from_file_node(fs, file, data, size);
     write_to_file_node(fs, copy, data, size);
@@ -335,6 +338,7 @@ Inode* move_file(FileSystem* fs, char* src, char* dst) {
     Inode* file = traverse(fs, fs->root, src, 1);
     if (!file || !is_file(file->stats.permissions)) return NULL;
     Inode* copy = copy_file_node(fs, file, dst);
+    if (!copy) return NULL;
     delete_file_from_node(fs, file);
     return copy;
 }
