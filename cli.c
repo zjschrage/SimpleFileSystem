@@ -76,6 +76,7 @@ void run_cli_sim(FileSystem* fs) {
             if (prefix_matching(KEY_WORDS[i], line, ' ') || prefix_matching(KEY_WORDS[i], line, '\n')) {
                 valid = 1;
                 redirect_func_call(fs, line, lineSize, i);
+                break;
             }
         }
         if (!valid) sfs_print("Not a valid command\n");
@@ -208,11 +209,12 @@ void cd(FileSystem* fs, char* name) {
     else set_current_path(name);
     current_node = traverse(fs, fs->root, current_path, 1);
     if ((current_node == NULL) || is_file(current_node->stats.permissions)) {
-        print_prefix();
-        printf("Cannot change to this directory %s\n", current_path);
+        int node_was_null = 0;
+        if (current_node == NULL) node_was_null = 1;
         set_current_path(last_path);
-        printf("%s\n", current_path);
         current_node = traverse(fs, fs->root, current_path, 1);
+        if (node_was_null) sfs_print("Cannot change to this directory. Does not exist\n");
+        else sfs_print("Cannot change to this directory since path indicated a file\n");
     }
 }
 

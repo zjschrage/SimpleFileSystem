@@ -13,12 +13,12 @@ touch [name] [size]   DONE
 mkdir [name]          DONE
 pwd                   DONE
 ls                    DONE
-cd [name]             BUGGY (cannot cd into bad directory)
-rm [name]             LIMITED
-rmdir [name]          LIMITED
+cd [name]             DONE
+rm [name]             ABSOLUTE PATHS ONLY
+rmdir [name]          ABSOLUTE PATHS ONLY
 exit                  DONE
-cp [src] [dst]
-mv [src] [dst]
+cp [src] [dst]        ABSOLUTE PATHS ONLY
+mv [src] [dst]        ABSOLUTE PATHS ONLY
 chmod [file] [flags]
 write [file] [data]
 read [file]
