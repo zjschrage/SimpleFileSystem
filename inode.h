@@ -68,16 +68,18 @@ void read_from_file(FileSystem* fs, char* path, void* data, int size);
  * 
  * @param fs filesystem object
  * @param path file path
+ * @return int 1 (sucessful) 0 (failure)
  */
-void delete_file(FileSystem* fs, char* path);
+int delete_file(FileSystem* fs, char* path);
 
 /**
  * @brief Deletes a directory recursively
  * 
  * @param fs filesystem object
  * @param path directory path
+ * @return int 1 (sucessful) 0 (failure)
  */
-void delete_directory(FileSystem* fs, char* path);
+int delete_directory(FileSystem* fs, char* path);
 
 /**
  * @brief Copies a file from directory src to directory dst

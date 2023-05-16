@@ -14,14 +14,14 @@ mkdir [name]          DONE
 pwd                   DONE
 ls                    DONE
 cd [name]             DONE
-rm [name]             ABSOLUTE PATHS ONLY
-rmdir [name]          ABSOLUTE PATHS ONLY
+rm [name]             DONE
+rmdir [name]          DONE
 exit                  DONE
-cp [src] [dst]        ABSOLUTE PATHS ONLY
-mv [src] [dst]        ABSOLUTE PATHS ONLY
+cp [src] [dst]        DONE
+mv [src] [dst]        DONE
 chmod [file] [flags]
-write [file] [data]
-read [file]
+write [file] [data]   DONE NOT TESTED THOROUGHLY
+read [file]           DONE NOT TESTED THOROUGHLY
 */
 
 /**
@@ -122,6 +122,20 @@ void mv(FileSystem* fs, char* src, char* dst);
 
 void chmod(FileSystem* fs, char* name, char* flags);
 
-void write(FileSystem* fs, char* name, char* data);
+/**
+ * @brief Writes a size amount of bytes from data to a file
+ * 
+ * @param fs filesystem object
+ * @param name file path
+ * @param data data source
+ * @param size size of data
+ */
+void write(FileSystem* fs, char* name, char* data, int size);
 
+/**
+ * @brief Reads data at a file
+ * 
+ * @param fs filesystem object
+ * @param name file path
+ */
 void read(FileSystem* fs, char* name);

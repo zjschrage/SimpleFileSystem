@@ -66,6 +66,14 @@ int truncate_prefix(char* a, char delim);
 void split(char* string, char** pointers, int n, char delim);
 
 /**
+ * @brief Returns the length of a 
+ * 
+ * @param string string to get length of
+ * @return int length
+ */
+int length(char* string);
+
+/**
  * @brief Prints first n elements of a char array (debugging tool)
  * 
  * @param arr char array

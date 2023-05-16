@@ -224,7 +224,7 @@ void write_to_file_node(FileSystem* fs, Inode* file, void* data, int size) {
 
 void write_to_file(FileSystem* fs, char* path, void* data, int size) {
     Inode* file = traverse(fs, fs->root, path, 1);
-    if (!file || size > file->stats.filesize) return;
+    if (!file || !is_file(file->stats.permissions) || size > file->stats.filesize) return;
     write_to_file_node(fs, file, data, size);
 }
 
@@ -252,7 +252,7 @@ void read_from_file_node(FileSystem* fs, Inode* file, void* data, int size) {
 
 void read_from_file(FileSystem* fs, char* path, void* data, int size) {
     Inode* file = traverse(fs, fs->root, path, 1);
-    if (!file || size > file->stats.filesize) return;
+    if (!file || !is_file(file->stats.permissions) || size > file->stats.filesize) return;
     read_from_file_node(fs, file, data, size);
 }
 
@@ -288,10 +288,11 @@ void delete_file_from_node(FileSystem* fs, Inode* file) {
     // printf("0: %d 1: %d 2: %d 3: %d\n", parent->direct[0], parent->direct[1], parent->direct[2], parent->direct[3]);
 }
 
-void delete_file(FileSystem* fs, char* path) {
+int delete_file(FileSystem* fs, char* path) {
     Inode* file = traverse(fs, fs->root, path, 1);
-    if (!file || !is_file(file->stats.permissions)) return;
+    if (!file || !is_file(file->stats.permissions)) return 0;
     delete_file_from_node(fs, file);
+    return 1;
 }
 
 void delete_directory_from_node(FileSystem* fs, Inode* file) {
@@ -309,13 +310,14 @@ void delete_directory_from_node(FileSystem* fs, Inode* file) {
     return_inode(file->stats.self, fs->bitmap);
 }
 
-void delete_directory(FileSystem* fs, char* path) {
+int delete_directory(FileSystem* fs, char* path) {
     Inode* file = traverse(fs, fs->root, path, 1);
-    if (!file || is_file(file->stats.permissions)) return;
+    if (!file || is_file(file->stats.permissions)) return 0;
     Inode* parent = handle_to_block(fs, file->stats.parent);
     delete_directory_from_node(fs, file);
     parent->direct[0]--;
     remove_child_from_directory(fs, parent, file->stats.self);
+    return 1;
 }
 
 Inode* copy_file_node(FileSystem* fs, Inode* file, char* dst) {

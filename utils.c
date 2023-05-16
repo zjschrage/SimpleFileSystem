@@ -64,6 +64,12 @@ void split(char* string, char** pointers, int n, char delim) {
     }
 }
 
+int length(char* string) {
+    int i = 0;
+    while (string[i] != '\0') i++;
+    return i;
+}
+
 void print_char_arr(char* arr, int n) {
     for (int i = 0; i < n; i++) {
         printf("%c", arr[i]);

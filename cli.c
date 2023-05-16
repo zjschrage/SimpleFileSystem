@@ -4,6 +4,7 @@ const int NUM_KEY_WORDS = 12;
 char* KEY_WORDS[NUM_KEY_WORDS] = {"touch", "mkdir", "pwd", "ls", "cd", "rm", "rmdir", "cp", "mv", "chmod", "read", "write"};
 
 Inode* current_node;
+const int MAX_DATA_SIZE = 512;
 const int MAX_ABSOLUTE_PATH_LEN = 128;
 const int MAX_PATH_NAME_LEN = 32;
 char current_path[MAX_ABSOLUTE_PATH_LEN];
@@ -142,6 +143,27 @@ void handle_mv(FileSystem* fs, char* line) {
     mv(fs, src, dst);
 }
 
+void handle_chmod(FileSystem* fs, char* line) {
+
+}
+
+void handle_read(FileSystem* fs, char* line) {
+    char type[5];
+    char path[MAX_PATH_NAME_LEN];
+    char* pointers[2] = {type, path};
+    split(line, pointers, 2, ' ');
+    read(fs, path);
+}
+
+void handle_write(FileSystem* fs, char* line) {
+    char type[6];
+    char path[MAX_PATH_NAME_LEN];
+    char data[MAX_DATA_SIZE];
+    char* pointers[3] = {type, path, data};
+    split(line, pointers, 3, ' ');
+    write(fs, path, data, length(data));
+}
+
 void redirect_func_call(FileSystem* fs, char* line, int size, int type) {
     switch (type) {
         case 0:
@@ -171,15 +193,15 @@ void redirect_func_call(FileSystem* fs, char* line, int size, int type) {
         case 8:
             handle_mv(fs, line);
             break;
-        // case 9:
-        //     handle_chmod(fs, line);
-        //     break;
-        // case 10:
-        //     handle_read(fs, line);
-        //     break;
-        // case 11:
-        //     handle_write(fs, line);
-        //     break;
+        case 9:
+            handle_chmod(fs, line);
+            break;
+        case 10:
+            handle_read(fs, line);
+            break;
+        case 11:
+            handle_write(fs, line);
+            break;
     }
 }
 
@@ -222,28 +244,88 @@ void rm(FileSystem* fs, char* name) {
     if (name[0] != '/') {
         char path[MAX_ABSOLUTE_PATH_LEN];
         strcpy(path, current_path);
-        strcat(path, "/");
+        if (current_path_pointer > 1) strcat(path, "/");
         strcat(path, name);
-        delete_file(fs, path);
+        name = path;
     }
-    else delete_file(fs, name);
+    if (!delete_file(fs, name)) sfs_print("Path Formatting Error\n");
 }
 
 void rmdir(FileSystem* fs, char* name) {
     if (name[0] != '/') {
         char path[MAX_ABSOLUTE_PATH_LEN];
         strcpy(path, current_path);
-        strcat(path, "/");
+        if (current_path_pointer > 1) strcat(path, "/");
         strcat(path, name);
-        delete_directory(fs, path);
+        name = path;
     }
-    else delete_directory(fs, name);
+    if (!delete_directory(fs, name)) sfs_print("Path Formatting Error\n");
 }
 
 void cp(FileSystem* fs, char* src, char* dst) {
-    copy_file(fs, src, dst);
+    if (src[0] != '/') {
+        char new_src[MAX_ABSOLUTE_PATH_LEN];
+        strcpy(new_src, current_path);
+        if (current_path_pointer > 1) strcat(new_src, "/");
+        strcat(new_src, src);
+        src = new_src;
+    }
+    if (dst[0] != '/') {
+        char new_dst[MAX_ABSOLUTE_PATH_LEN];
+        strcpy(new_dst, current_path);
+        if (current_path_pointer > 1) strcat(new_dst, "/");
+        strcat(new_dst, src);
+        dst = new_dst;
+    }
+    if (!copy_file(fs, src, dst)) sfs_print("Path Formatting Error\n");
 }
 
 void mv(FileSystem* fs, char* src, char* dst) {
-    move_file(fs, src, dst);
+    if (src[0] != '/') {
+        char new_src[MAX_ABSOLUTE_PATH_LEN];
+        strcpy(new_src, current_path);
+        if (current_path_pointer > 1) strcat(new_src, "/");
+        strcat(new_src, src);
+        src = new_src;
+    }
+    if (dst[0] != '/') {
+        char new_dst[MAX_ABSOLUTE_PATH_LEN];
+        strcpy(new_dst, current_path);
+        if (current_path_pointer > 1) strcat(new_dst, "/");
+        strcat(new_dst, src);
+        dst = new_dst;
+    }
+    if (!move_file(fs, src, dst)) sfs_print("Path Formatting Error\n");
+}
+
+void chmod(FileSystem* fs, char* name, char* flags) {
+
+}
+
+void write(FileSystem* fs, char* name, char* data, int size) {
+    if (name[0] != '/') {
+        char path[MAX_ABSOLUTE_PATH_LEN];
+        strcpy(path, current_path);
+        if (current_path_pointer > 1) strcat(path, "/");
+        strcat(path, name);
+        name = path;
+    }
+    write_to_file(fs, name, data, size);
+}
+
+void read(FileSystem* fs, char* name) {
+    if (name[0] != '/') {
+        char path[MAX_ABSOLUTE_PATH_LEN];
+        strcpy(path, current_path);
+        if (current_path_pointer > 1) strcat(path, "/");
+        strcat(path, name);
+        name = path;
+    }
+    Inode* file = traverse(fs, fs->root, name, 1);
+    if (!is_file(file->stats.permissions)) return;
+    int size = file->stats.filesize;
+    char data[size];
+    read_from_file(fs, name, data, size);
+    sfs_print(data);
+    printf("\n");
 }
